@@ -1,6 +1,6 @@
 # scry
 
-A [pi](https://github.com/earendil-works/pi-coding-agent) extension that gives the LLM web search via the [Brave Search API](https://api-dashboard.search.brave.com/documentation).
+A [pi](https://github.com/earendil-works/pi) extension that gives the LLM web search via the [Brave Search API](https://api-dashboard.search.brave.com/documentation).
 
 ## Install
 
