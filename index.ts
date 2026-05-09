@@ -1,4 +1,5 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { StringEnum } from "@earendil-works/pi-ai";
 
@@ -19,6 +20,15 @@ export default function (pi: ExtensionAPI) {
     promptGuidelines: [
       "Use web_search when the user asks you to look up current information, facts, or content from the web.",
     ],
+    renderCall(args, theme, _context) {
+      let text = theme.fg("toolTitle", theme.bold("web_search "));
+      text += theme.fg("accent", args.query);
+      if (args.freshness) {
+        text += theme.fg("dim", " (" + args.freshness + ")");
+      }
+      return new Text(text, 0, 0);
+    },
+
     parameters: Type.Object({
       query: Type.String({ description: "Search query" }),
       freshness: Type.Optional(
