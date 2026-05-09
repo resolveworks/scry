@@ -5,12 +5,14 @@ A [pi](https://github.com/earendil-works/pi-coding-agent) extension that gives t
 ## Install
 
 ```bash
-git clone https://github.com/resolveworks/scry
-cd scry && npm install
-pi -e ./index.ts
+pi install git:github.com/resolveworks/scry
 ```
 
-To load it automatically, copy or symlink the directory into `~/.pi/agent/extensions/` or `.pi/extensions/`.
+Or to try it without installing:
+
+```bash
+pi -e git:github.com/resolveworks/scry
+```
 
 ## Setup
 
