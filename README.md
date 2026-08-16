@@ -40,3 +40,15 @@ You can also prompt it directly:
 | `freshness` | enum | no | `pd` (24h), `pw` (7d), `pm` (31d), `py` (year) |
 
 Returns 10 results with titles, URLs, descriptions, and extra snippets.
+
+## Development
+
+Requires Node.js 22.18 or newer and pnpm 11.3.0.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm format:check
+```
+
+Use `pnpm format` to apply formatting.

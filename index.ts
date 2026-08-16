@@ -1,7 +1,13 @@
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { Text } from "@earendil-works/pi-tui";
-import { Type } from "typebox";
 import { StringEnum } from "@earendil-works/pi-ai";
+import {
+  type ExtensionAPI,
+  getMarkdownTheme,
+  keyHint,
+  type Theme,
+  type ToolRenderResultOptions,
+} from "@earendil-works/pi-coding-agent";
+import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
+import { Type } from "typebox";
 
 interface SearchResult {
   title: string;
@@ -10,12 +16,53 @@ interface SearchResult {
   extra_snippets?: string[];
 }
 
+/** Number of markdown lines shown when the result row is collapsed (ctrl+o to expand). */
+const PREVIEW_LINES = 10;
+
+function moreLinesHint(remaining: number, theme: Theme): string {
+  return (
+    theme.fg("muted", `... (${remaining} more lines,`) +
+    " " +
+    keyHint("app.tools.expand", "to expand") +
+    theme.fg("muted", ")")
+  );
+}
+
+function renderMarkdownResult(
+  result: { content: Array<{ type: string; text?: string }> },
+  options: ToolRenderResultOptions,
+  theme: Theme,
+  context: { isError: boolean },
+): Container {
+  const textContent = result.content.find((item) => item.type === "text");
+  let output = textContent?.text ?? "";
+
+  let hint = "";
+  if (output && !options.expanded && !options.isPartial && !context.isError) {
+    const lines = output.split("\n");
+    if (lines.length > PREVIEW_LINES) {
+      hint = moreLinesHint(lines.length - PREVIEW_LINES, theme);
+      output = lines.slice(0, PREVIEW_LINES).join("\n");
+    }
+  }
+
+  const container = new Container();
+  container.addChild(new Spacer(1));
+  if (output) {
+    container.addChild(new Markdown(output, 0, 0, getMarkdownTheme()));
+  }
+  if (hint) {
+    container.addChild(new Spacer(1));
+    container.addChild(new Text(hint, 0, 0));
+  }
+  return container;
+}
+
 export default function (pi: ExtensionAPI) {
   pi.registerTool({
     name: "web_search",
     label: "Web Search",
-    description:
-      "Search Brave's web index and return relevant results as markdown.",
+    description: "Search Brave's web index and return relevant results as markdown.",
     promptSnippet: "Search the web for information on a topic",
     promptGuidelines: [
       "Use web_search when the user asks you to look up current information, facts, or content from the web.",
@@ -28,6 +75,7 @@ export default function (pi: ExtensionAPI) {
       }
       return new Text(text, 0, 0);
     },
+    renderResult: renderMarkdownResult,
 
     parameters: Type.Object({
       query: Type.String({ description: "Search query" }),
@@ -75,8 +123,8 @@ export default function (pi: ExtensionAPI) {
           },
           signal,
         });
-      } catch (err: any) {
-        if (err.name === "AbortError") {
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
           return {
             content: [{ type: "text" as const, text: "Search aborted." }],
             details: {},
@@ -105,9 +153,7 @@ export default function (pi: ExtensionAPI) {
 
       if (!results || results.length === 0) {
         return {
-          content: [
-            { type: "text" as const, text: `No results found for "${query}".` },
-          ],
+          content: [{ type: "text" as const, text: `No results found for "${query}".` }],
           details: {},
         };
       }
